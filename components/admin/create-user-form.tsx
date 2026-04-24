@@ -1,10 +1,8 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { LoaderCircle } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,14 +16,17 @@ import {
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useUserMutations } from "@/lib/query-hooks"
-import { createUserSchema } from "@/lib/schemas"
 
-type CreateUserValues = z.input<typeof createUserSchema>
+type CreateUserValues = {
+  name: string
+  email: string
+  password: string
+  role: "user" | "moderator" | "admin" | "superAdmin"
+}
 
 export function CreateUserForm() {
   const { create } = useUserMutations()
   const form = useForm<CreateUserValues>({
-    resolver: zodResolver(createUserSchema),
     defaultValues: {
       name: "",
       email: "",

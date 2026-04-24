@@ -1,25 +1,24 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { LoaderCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
 
 import { adminLogin } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { ROUTES } from "@/lib/routes"
-import { adminLoginSchema } from "@/lib/schemas"
 
-type AdminLoginValues = z.input<typeof adminLoginSchema>
+type AdminLoginValues = {
+  email: string
+  password: string
+}
 
 export function AdminLoginForm() {
   const router = useRouter()
   const form = useForm<AdminLoginValues>({
-    resolver: zodResolver(adminLoginSchema),
     defaultValues: { email: "", password: "" },
   })
 

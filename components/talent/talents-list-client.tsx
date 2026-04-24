@@ -1,10 +1,8 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { TalentStatus } from "@/generated/prisma/browser"
 import { useEffect, useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { useForm, useWatch } from "react-hook-form"
 
 import { TalentCard } from "@/components/talent/talent-card"
 import { Button } from "@/components/ui/button"
@@ -12,13 +10,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Input } from "@/components/ui/input"
 import { useTalentsQuery } from "@/lib/query-hooks"
 
-const talentSearchSchema = z.object({
-  search: z.string().default(""),
-  skill: z.string().default(""),
-  minYears: z.string().default(""),
-})
-
-type TalentSearchValues = z.infer<typeof talentSearchSchema>
+type TalentSearchValues = {
+  search: string
+  skill: string
+  minYears: string
+}
 
 export function TalentsListClient({
   page,
@@ -32,7 +28,6 @@ export function TalentsListClient({
   minYears: number | undefined
 }) {
   const form = useForm<TalentSearchValues>({
-    resolver: zodResolver(talentSearchSchema),
     defaultValues: {
       search,
       skill,
@@ -40,17 +35,19 @@ export function TalentsListClient({
     },
   })
   const [currentPage, setCurrentPage] = useState(page)
-  const values = form.watch()
-  const [debouncedFilters, setDebouncedFilters] = useState(values)
+  const searchValue = useWatch({ control: form.control, name: "search" }) ?? ""
+  const skillValue = useWatch({ control: form.control, name: "skill" }) ?? ""
+  const minYearsValue = useWatch({ control: form.control, name: "minYears" }) ?? ""
+  const [debouncedFilters, setDebouncedFilters] = useState({ search: searchValue, skill: skillValue, minYears: minYearsValue })
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setDebouncedFilters(values)
+      setDebouncedFilters({ search: searchValue, skill: skillValue, minYears: minYearsValue })
       setCurrentPage(1)
     }, 350)
 
     return () => window.clearTimeout(timeout)
-  }, [values.minYears, values.search, values.skill])
+  }, [minYearsValue, searchValue, skillValue])
 
   const parsedMinYears = useMemo(() => {
     const value = Number(debouncedFilters.minYears)

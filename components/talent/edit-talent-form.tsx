@@ -1,12 +1,10 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { LoaderCircle } from "lucide-react"
 import { type TalentProfile } from "@/generated/prisma/browser"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,10 +20,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useTalentMutations } from "@/lib/query-hooks"
 import { ROUTES } from "@/lib/routes"
-import { talentUpdateSchema } from "@/lib/schemas"
 import { UploadButton } from "@/lib/uploadthing"
 
-type EditTalentFormValues = z.input<typeof talentUpdateSchema> & {
+type EditTalentFormValues = {
+  fullName?: string
+  email?: string
+  primarySkill?: string
+  yearsOfExperience?: number
+  description?: string
+  profileImageUrl?: string
+  resumeUrl?: string
+  resumeFileName?: string
   status: "PENDING" | "APPROVED" | "REJECTED"
 }
 
@@ -50,7 +55,6 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
   const router = useRouter()
   const { update } = useTalentMutations()
   const form = useForm<EditTalentFormValues>({
-    resolver: zodResolver(talentUpdateSchema.extend({ status: z.enum(["PENDING", "APPROVED", "REJECTED"]) })),
     defaultValues: {
       fullName: talent.fullName,
       email: talent.email,
@@ -63,6 +67,8 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
       resumeFileName: talent.resumeFileName ?? "",
     },
   })
+  const uploadedProfileImage = useWatch({ control: form.control, name: "profileImageUrl" })
+  const uploadedResumeName = useWatch({ control: form.control, name: "resumeFileName" })
 
   const isPending = form.formState.isSubmitting
 
@@ -132,7 +138,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
                 <Input
                   type="number"
                   min={0}
-                  value={field.value}
+                  value={field.value ?? 0}
                   onChange={(event) => field.onChange(event.currentTarget.valueAsNumber)}
                 />
               </FormControl>
@@ -159,7 +165,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select value={field.value ?? "PENDING"} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select status" />
@@ -193,7 +199,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
               toast.error(error.message)
             }}
           />
-          {form.watch("profileImageUrl") ? <p className="text-xs text-muted-foreground">Image uploaded.</p> : null}
+          {uploadedProfileImage ? <p className="text-xs text-muted-foreground">Image uploaded.</p> : null}
         </FormItem>
         <FormItem>
           <FormLabel>Resume (PDF)</FormLabel>
@@ -214,8 +220,8 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
               toast.error(error.message)
             }}
           />
-          {form.watch("resumeFileName") ? (
-            <p className="text-xs text-muted-foreground">Uploaded: {form.watch("resumeFileName")}</p>
+          {uploadedResumeName ? (
+            <p className="text-xs text-muted-foreground">Uploaded: {uploadedResumeName}</p>
           ) : null}
         </FormItem>
         <Button size="lg" disabled={isPending}>

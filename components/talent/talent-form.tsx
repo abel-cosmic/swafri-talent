@@ -1,11 +1,9 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckCircle2, LoaderCircle, Upload } from "lucide-react"
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
 
 import {
   Form,
@@ -20,10 +18,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useTalentMutations } from "@/lib/query-hooks"
-import { talentSubmissionSchema } from "@/lib/schemas"
 import { UploadButton } from "@/lib/uploadthing"
 
-type TalentFormValues = z.input<typeof talentSubmissionSchema>
+type TalentFormValues = {
+  fullName: string
+  email: string
+  primarySkill: string
+  yearsOfExperience: number
+  description: string
+  profileImageUrl?: string
+  resumeUrl?: string
+  resumeFileName?: string
+}
 
 type UploadedFile = {
   name?: string
@@ -46,7 +52,6 @@ export function TalentForm() {
   const [success, setSuccess] = useState(false)
   const { submit } = useTalentMutations()
   const form = useForm<TalentFormValues>({
-    resolver: zodResolver(talentSubmissionSchema),
     defaultValues: {
       fullName: "",
       email: "",
@@ -58,6 +63,8 @@ export function TalentForm() {
       resumeFileName: "",
     },
   })
+  const uploadedProfileImage = useWatch({ control: form.control, name: "profileImageUrl" })
+  const uploadedResumeName = useWatch({ control: form.control, name: "resumeFileName" })
 
   const isPending = form.formState.isSubmitting
 
@@ -138,7 +145,7 @@ export function TalentForm() {
                 <Input
                   type="number"
                   min={0}
-                  value={field.value}
+                  value={field.value ?? 0}
                   onChange={(event) => field.onChange(event.currentTarget.valueAsNumber)}
                 />
               </FormControl>
@@ -182,7 +189,7 @@ export function TalentForm() {
                   toast.error(error.message)
                 }}
               />
-              {form.watch("profileImageUrl") ? (
+              {uploadedProfileImage ? (
                 <p className="text-xs text-muted-foreground">Image uploaded and ready.</p>
               ) : null}
               <FormMessage />
@@ -212,17 +219,12 @@ export function TalentForm() {
                   toast.error(error.message)
                 }}
               />
-              {form.watch("resumeFileName") ? (
-                <p className="text-xs text-muted-foreground">Uploaded: {form.watch("resumeFileName")}</p>
+              {uploadedResumeName ? (
+                <p className="text-xs text-muted-foreground">Uploaded: {uploadedResumeName}</p>
               ) : null}
               <FormMessage />
             </FormItem>
           )}
-        />
-        <FormField
-          control={form.control}
-          name="resumeFileName"
-          render={({ field }) => <input type="hidden" value={field.value ?? ""} onChange={field.onChange} />}
         />
         <Button size="lg" disabled={isPending} className="min-w-36">
           {isPending ? <LoaderCircle className="animate-spin" /> : <Upload />}

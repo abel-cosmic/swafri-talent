@@ -1,12 +1,10 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, type ColumnDef, type ColumnFiltersState, type SortingState, useReactTable } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown } from "lucide-react"
 import { useMemo, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,13 +24,8 @@ type UserRecord = {
   createdAt?: string | Date
 }
 
-const rowRoleSchema = z.object({
-  role: z.enum(["superAdmin", "admin", "moderator", "user"]),
-})
-
 function SetRoleControl({ userId, disabled, onSubmit }: { userId: string; disabled: boolean; onSubmit: (userId: string, role: "superAdmin" | "admin" | "moderator" | "user") => void }) {
-  const form = useForm<z.input<typeof rowRoleSchema>>({
-    resolver: zodResolver(rowRoleSchema),
+  const form = useForm<{ role: "superAdmin" | "admin" | "moderator" | "user" }>({
     defaultValues: { role: "user" },
   })
 
