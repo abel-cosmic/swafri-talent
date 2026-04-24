@@ -1,19 +1,21 @@
 "use client";
 
 import { type TalentProfile } from "@/generated/prisma/browser";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useTalentMutations } from "@/lib/query-hooks";
 import { ROUTES } from "@/lib/routes";
 
 export function EditTalentForm({ talent }: { talent: TalentProfile }) {
   const [isPending, startTransition] = useTransition();
+  const [statusValue, setStatusValue] = useState<"PENDING" | "APPROVED" | "REJECTED">(talent.status);
   const router = useRouter();
   const { update } = useTalentMutations();
 
@@ -39,7 +41,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
   }
 
   return (
-    <form action={onSubmit} className="space-y-4">
+    <form action={onSubmit} className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) md:p-6">
       <div>
         <Label htmlFor="fullName">Full Name</Label>
         <Input id="fullName" name="fullName" defaultValue={talent.fullName} required />
@@ -62,13 +64,21 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
       </div>
       <div>
         <Label htmlFor="status">Status</Label>
-        <select id="status" name="status" defaultValue={talent.status} className="w-full rounded-md border p-2">
-          <option value="PENDING">PENDING</option>
-          <option value="APPROVED">APPROVED</option>
-          <option value="REJECTED">REJECTED</option>
-        </select>
+        <input type="hidden" name="status" value={statusValue} />
+        <Select value={statusValue} onValueChange={(value) => setStatusValue(value as "PENDING" | "APPROVED" | "REJECTED")}>
+          <SelectTrigger id="status" className="w-full">
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="PENDING">PENDING</SelectItem>
+            <SelectItem value="APPROVED">APPROVED</SelectItem>
+            <SelectItem value="REJECTED">REJECTED</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      <Button disabled={isPending}>{isPending ? "Saving..." : "Save changes"}</Button>
+      <Button size="lg" disabled={isPending}>
+        {isPending ? "Saving..." : "Save changes"}
+      </Button>
     </form>
-  );
+  )
 }

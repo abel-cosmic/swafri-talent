@@ -17,8 +17,12 @@ export default async function AdminEditTalentPage({ params }: { params: Promise<
   if (!talent) notFound();
 
   return (
-    <PageWrapper title="Edit Talent" className="max-w-2xl">
+    <PageWrapper
+      title="Edit Talent"
+      description="Adjust profile details and moderation status while preserving consistent directory quality."
+      className="max-w-2xl"
+    >
       <EditTalentForm talent={talent} />
     </PageWrapper>
-  );
+  )
 }

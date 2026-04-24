@@ -18,11 +18,11 @@ export function AdminUsersClient({
   const { data, isLoading, isError } = useUsersQuery();
 
   return (
-    <>
+    <div className="space-y-5">
       {canCreate ? <CreateUserForm /> : null}
-      {isLoading ? <p>Loading users...</p> : null}
+      {isLoading ? <p className="text-sm text-muted-foreground">Loading users...</p> : null}
       {isError ? <p className="text-destructive">Unable to load users.</p> : null}
       <UserTable rows={(data?.users ?? []) as never[]} canSetRole={canSetRole} canBan={canBan} canDelete={canDelete} />
-    </>
-  );
+    </div>
+  )
 }

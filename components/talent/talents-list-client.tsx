@@ -22,29 +22,29 @@ export function TalentsListClient({ page, search }: { page: number; search: stri
 
   return (
     <>
-      <form className="my-4 flex gap-2">
-        <Input name="search" defaultValue={search} placeholder="Search by name or skill" />
+      <form className="my-4 flex flex-col gap-2 rounded-xl border border-border/80 bg-card p-3 shadow-(--cursor-shadow-ambient) sm:flex-row">
+        <Input name="search" defaultValue={search} placeholder="Search by name or skill" className="sm:flex-1" />
         <Button type="submit">Search</Button>
       </form>
-      {isLoading ? <p>Loading talents...</p> : null}
+      {isLoading ? <p className="text-sm text-muted-foreground">Loading talents...</p> : null}
       {isError ? <p className="text-destructive">Failed to load talents.</p> : null}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {items.map((talent) => (
           <TalentCard key={talent.id} talent={talent} />
         ))}
       </div>
-      <div className="mt-6 flex gap-3">
+      <div className="mt-7 flex gap-3">
         {page > 1 ? (
-          <Button variant="outline" asChild>
+          <Button variant="secondary" asChild>
             <Link href={routeBuilders.talentsList({ page: page - 1, search })}>Previous</Link>
           </Button>
         ) : null}
         {hasNext ? (
-          <Button variant="outline" asChild>
+          <Button variant="secondary" asChild>
             <Link href={routeBuilders.talentsList({ page: page + 1, search })}>Next</Link>
           </Button>
         ) : null}
       </div>
     </>
-  );
+  )
 }

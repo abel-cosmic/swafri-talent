@@ -21,7 +21,10 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   }
 
   return (
-    <PageWrapper title="Admin Dashboard">
+    <PageWrapper
+      title="Admin Dashboard"
+      description="Monitor submissions, moderate status changes, and keep the public talent directory high quality."
+    >
       <AdminDashboardClient
         rolePermissions={{
           canApprove: can(role, "talent:approve"),
@@ -33,5 +36,5 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         status={params.status}
       />
     </PageWrapper>
-  );
+  )
 }

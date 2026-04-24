@@ -12,9 +12,9 @@ import { useTalentMutations } from "@/lib/query-hooks";
 import { routeBuilders } from "@/lib/routes/builders";
 
 function StatusBadge({ status }: { status: TalentStatus }) {
-  if (status === "APPROVED") return <Badge className="bg-green-100 text-green-800">APPROVED</Badge>;
-  if (status === "REJECTED") return <Badge className="bg-red-100 text-red-800">REJECTED</Badge>;
-  return <Badge className="bg-yellow-100 text-yellow-800">PENDING</Badge>;
+  if (status === "APPROVED") return <Badge className="bg-(--cursor-success)/15 text-(--cursor-success)">APPROVED</Badge>
+  if (status === "REJECTED") return <Badge className="bg-destructive/15 text-destructive">REJECTED</Badge>
+  return <Badge className="bg-(--cursor-orange)/15 text-(--cursor-orange)">PENDING</Badge>
 }
 
 export function TalentTable({
@@ -72,12 +72,12 @@ export function TalentTable({
                 </Button>
               ) : null}
               {canReject ? (
-                <Button size="sm" variant="outline" disabled={isPending} onClick={() => runAction(() => reject.mutateAsync(row.id))}>
+                <Button size="sm" variant="secondary" disabled={isPending} onClick={() => runAction(() => reject.mutateAsync(row.id))}>
                   Reject
                 </Button>
               ) : null}
               {canUpdate ? (
-                <Button size="sm" variant="secondary" asChild>
+                <Button size="sm" variant="ghost" asChild>
                   <Link href={routeBuilders.adminTalentEdit(row.id)}>Edit</Link>
                 </Button>
               ) : null}

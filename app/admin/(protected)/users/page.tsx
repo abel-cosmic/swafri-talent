@@ -11,7 +11,10 @@ export default async function AdminUsersPage() {
   if (!can(role, "userManagement:list")) return <p className="text-destructive">Access denied.</p>;
 
   return (
-    <PageWrapper title="User Management">
+    <PageWrapper
+      title="User Management"
+      description="Create users, update roles, and enforce moderation controls from one central dashboard."
+    >
       <AdminUsersClient
         canCreate={can(role, "userManagement:create")}
         canSetRole={can(role, "userManagement:setRole")}
@@ -19,5 +22,5 @@ export default async function AdminUsersPage() {
         canDelete={can(role, "userManagement:delete")}
       />
     </PageWrapper>
-  );
+  )
 }

@@ -11,8 +11,12 @@ export default async function AdminLoginPage() {
   if (session) redirect(ROUTES.adminDashboard);
 
   return (
-    <PageWrapper title="Admin Login" className="max-w-md">
+    <PageWrapper
+      title="Admin Login"
+      description="Sign in to access moderation and user management tools."
+      className="max-w-lg"
+    >
       <AdminAuthView />
     </PageWrapper>
-  );
+  )
 }

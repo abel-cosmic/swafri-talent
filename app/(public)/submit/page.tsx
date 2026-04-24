@@ -5,10 +5,10 @@ export default function SubmitPage() {
   return (
     <PageWrapper
       title="Submit Your Talent Profile"
-      description="All fields are required and reviewed by moderators."
+      description="Share your profile details for moderation. Every field helps teams match your strengths faster."
       className="max-w-2xl"
     >
       <TalentForm />
     </PageWrapper>
-  );
+  )
 }

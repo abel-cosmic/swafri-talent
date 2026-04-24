@@ -7,18 +7,24 @@ import { ROUTES } from "@/lib/routes";
 export default function HomePage() {
   return (
     <PageWrapper
-      title="Talent Management System"
-      description="Submit your talent profile, browse approved talent, and manage records through role-based admin tools."
-      className="max-w-3xl"
+      title="Discover and Manage Talent with Confidence"
+      description="A warm, modern workspace to submit profiles, explore approved professionals, and run role-based operations without friction."
+      className="max-w-4xl"
     >
-      <div className="mt-2 flex gap-3">
-        <Button asChild>
+      <div className="grid gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) sm:grid-cols-2 sm:p-6">
+        <div className="space-y-2 sm:col-span-2">
+          <p className="font-display text-display-md">Built for fast submissions and clean review flows.</p>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Keep every interaction simple: profile creation, approvals, and browsing all share one polished system.
+          </p>
+        </div>
+        <Button size="lg" asChild>
           <Link href={ROUTES.submit}>Submit Profile</Link>
         </Button>
-        <Button variant="outline" asChild>
+        <Button variant="secondary" size="lg" asChild>
           <Link href={ROUTES.talents}>Browse Talent</Link>
         </Button>
       </div>
     </PageWrapper>
-  );
+  )
 }

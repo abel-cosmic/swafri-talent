@@ -8,10 +8,14 @@ export function AdminNav({ role }: { role?: string | null }) {
   return (
     <nav className="space-y-2">
       {routes.map((route) => (
-        <Link key={route.key} href={route.path} className="block rounded px-3 py-2 hover:bg-muted">
+        <Link
+          key={route.key}
+          href={route.path}
+          className="font-display block rounded-lg border border-transparent px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-border hover:bg-background hover:text-destructive"
+        >
           {route.label}
         </Link>
       ))}
     </nav>
-  );
+  )
 }

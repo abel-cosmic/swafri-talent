@@ -20,16 +20,19 @@ export function AdminDashboardClient({
     status: status as TalentStatus | undefined,
   });
 
-  if (isLoading) return <p>Loading admin talents...</p>;
+  if (isLoading) return <p className="text-sm text-muted-foreground">Loading admin talents...</p>;
   if (isError) return <p className="text-destructive">Unable to load talent records.</p>;
 
   return (
-    <TalentTable
-      rows={data?.items ?? []}
-      canApprove={rolePermissions.canApprove}
-      canReject={rolePermissions.canReject}
-      canUpdate={rolePermissions.canUpdate}
-      canDelete={rolePermissions.canDelete}
-    />
-  );
+    <div className="space-y-4">
+      <p className="font-editorial text-muted-foreground">Review submissions, change status, and keep records up to date.</p>
+      <TalentTable
+        rows={data?.items ?? []}
+        canApprove={rolePermissions.canApprove}
+        canReject={rolePermissions.canReject}
+        canUpdate={rolePermissions.canUpdate}
+        canDelete={rolePermissions.canDelete}
+      />
+    </div>
+  )
 }

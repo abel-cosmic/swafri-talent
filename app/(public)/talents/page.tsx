@@ -9,8 +9,12 @@ export default async function TalentsPage({ searchParams }: { searchParams: Sear
   const search = params.search ?? "";
 
   return (
-    <PageWrapper title="Approved Talent Profiles" className="max-w-5xl">
+    <PageWrapper
+      title="Approved Talent Profiles"
+      description="Browse verified professionals, filter by name or skill, and open full profile details."
+      className="max-w-6xl"
+    >
       <TalentsListClient page={page} search={search} />
     </PageWrapper>
-  );
+  )
 }

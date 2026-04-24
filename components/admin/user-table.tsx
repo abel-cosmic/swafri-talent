@@ -58,7 +58,7 @@ export function UserTable({
             <TableCell>{row.name}</TableCell>
             <TableCell>{row.email}</TableCell>
             <TableCell>
-              <Badge>{row.role ?? "user"}</Badge>
+              <Badge variant="secondary">{row.role ?? "user"}</Badge>
             </TableCell>
             <TableCell>{row.banned ? "Yes" : "No"}</TableCell>
             <TableCell>{row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-"}</TableCell>
@@ -82,7 +82,7 @@ export function UserTable({
                 </form>
               ) : null}
               {canBan ? (
-                <Button size="sm" variant="outline" disabled={isPending} onClick={() => doAction(() => ban.mutateAsync({ userId: row.id }))}>
+                <Button size="sm" variant="secondary" disabled={isPending} onClick={() => doAction(() => ban.mutateAsync({ userId: row.id }))}>
                   Ban
                 </Button>
               ) : null}

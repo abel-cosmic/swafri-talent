@@ -6,24 +6,31 @@ import { useTalentDetailQuery } from "@/lib/query-hooks";
 export function TalentDetailClient({ id }: { id: string }) {
   const { data: talent, isLoading } = useTalentDetailQuery(id);
 
-  if (isLoading) return <p>Loading profile...</p>;
+  if (isLoading) return <p className="text-sm text-muted-foreground">Loading profile...</p>;
   if (!talent || talent.status !== TalentStatus.APPROVED) {
-    return <p className="text-destructive">Talent profile not found.</p>;
+    return <p className="text-destructive">Talent profile not found.</p>
   }
 
   return (
-    <>
-      <h1 className="text-2xl font-semibold">{talent.fullName}</h1>
-      <p className="mt-4">
-        <strong>Email:</strong> {talent.email}
-      </p>
-      <p>
-        <strong>Primary Skill:</strong> {talent.primarySkill}
-      </p>
-      <p>
-        <strong>Experience:</strong> {talent.yearsOfExperience} years
-      </p>
-      <p className="mt-4 whitespace-pre-wrap">{talent.description}</p>
-    </>
-  );
+    <article className="space-y-5 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) md:p-7">
+      <header className="space-y-2">
+        <h2 className="font-display text-display-md">{talent.fullName}</h2>
+        <p className="font-editorial text-muted-foreground">{talent.primarySkill}</p>
+      </header>
+      <dl className="grid gap-3 text-sm sm:grid-cols-2">
+        <div className="rounded-lg bg-muted p-3">
+          <dt className="font-display text-xs tracking-[0.04em] text-muted-foreground">Email</dt>
+          <dd className="mt-1 text-foreground">{talent.email}</dd>
+        </div>
+        <div className="rounded-lg bg-muted p-3">
+          <dt className="font-display text-xs tracking-[0.04em] text-muted-foreground">Experience</dt>
+          <dd className="mt-1 text-foreground">{talent.yearsOfExperience} years</dd>
+        </div>
+      </dl>
+      <section className="rounded-lg bg-background/80 p-4">
+        <h3 className="font-display text-sm tracking-[0.03em] text-muted-foreground">About</h3>
+        <p className="mt-2 whitespace-pre-wrap text-foreground/90">{talent.description}</p>
+      </section>
+    </article>
+  )
 }

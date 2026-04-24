@@ -11,15 +11,15 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
   if (!session) redirect(ROUTES.adminLogin);
 
   return (
-    <div className="grid grid-cols-1 rounded-lg border md:grid-cols-[220px_1fr]">
-      <aside className="border-r p-4">
-        <h2 className="mb-4 text-lg font-semibold">Admin</h2>
+    <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-(--cursor-shadow-ambient) md:grid-cols-[250px_1fr]">
+      <aside className="border-b border-border/70 bg-muted/50 p-5 md:border-r md:border-b-0">
+        <h2 className="mb-4 font-display text-display-md">Admin</h2>
         <AdminNav role={session.user.role as string | undefined} />
         <div className="mt-6">
           <AdminLogoutButton />
         </div>
       </aside>
-      <main className="p-6">{children}</main>
+      <main className="p-5 md:p-7">{children}</main>
     </div>
-  );
+  )
 }
