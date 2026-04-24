@@ -5,10 +5,10 @@ import { TalentStatus, type TalentProfile } from "@/generated/prisma/client";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { adminApproveTalent, adminDeleteTalent, adminRejectTalent } from "@/actions/talent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useTalentMutations } from "@/lib/query-hooks";
 
 function StatusBadge({ status }: { status: TalentStatus }) {
   if (status === "APPROVED") return <Badge className="bg-green-100 text-green-800">APPROVED</Badge>;
@@ -30,6 +30,7 @@ export function TalentTable({
   canDelete: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const { approve, reject, remove } = useTalentMutations();
 
   function runAction(handler: () => Promise<{ success: boolean; error?: string }>) {
     startTransition(async () => {
@@ -65,12 +66,12 @@ export function TalentTable({
             <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
             <TableCell className="space-x-2">
               {canApprove ? (
-                <Button size="sm" disabled={isPending} onClick={() => runAction(() => adminApproveTalent(row.id))}>
+                <Button size="sm" disabled={isPending} onClick={() => runAction(() => approve.mutateAsync(row.id))}>
                   Approve
                 </Button>
               ) : null}
               {canReject ? (
-                <Button size="sm" variant="outline" disabled={isPending} onClick={() => runAction(() => adminRejectTalent(row.id))}>
+                <Button size="sm" variant="outline" disabled={isPending} onClick={() => runAction(() => reject.mutateAsync(row.id))}>
                   Reject
                 </Button>
               ) : null}
@@ -80,7 +81,7 @@ export function TalentTable({
                 </Button>
               ) : null}
               {canDelete ? (
-                <Button size="sm" variant="destructive" disabled={isPending} onClick={() => runAction(() => adminDeleteTalent(row.id))}>
+                <Button size="sm" variant="destructive" disabled={isPending} onClick={() => runAction(() => remove.mutateAsync(row.id))}>
                   Delete
                 </Button>
               ) : null}

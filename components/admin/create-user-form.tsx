@@ -3,17 +3,18 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { createAdminUser } from "@/actions/users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useUserMutations } from "@/lib/query-hooks";
 
 export function CreateUserForm() {
   const [isPending, startTransition] = useTransition();
+  const { create } = useUserMutations();
 
   function onSubmit(formData: FormData) {
     startTransition(async () => {
-      const result = await createAdminUser({
+      const result = await create.mutateAsync({
         name: String(formData.get("name") ?? ""),
         email: String(formData.get("email") ?? ""),
         password: String(formData.get("password") ?? ""),

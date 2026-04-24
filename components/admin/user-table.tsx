@@ -3,11 +3,11 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { banUser, deleteUser, setUserRole } from "@/actions/users";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useUserMutations } from "@/lib/query-hooks";
 
 type UserRecord = {
   id: string;
@@ -30,6 +30,7 @@ export function UserTable({
   canDelete: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const { setRole, ban, remove } = useUserMutations();
 
   function doAction(fn: () => Promise<{ success: boolean; error?: string }>) {
     startTransition(async () => {
@@ -67,7 +68,7 @@ export function UserTable({
                   className="inline-flex items-center gap-2"
                   action={(fd) =>
                     doAction(() =>
-                      setUserRole({
+                      setRole.mutateAsync({
                         userId: row.id,
                         role: String(fd.get("role") ?? "user") as "superAdmin" | "admin" | "moderator" | "user",
                       }),
@@ -81,12 +82,12 @@ export function UserTable({
                 </form>
               ) : null}
               {canBan ? (
-                <Button size="sm" variant="outline" disabled={isPending} onClick={() => doAction(() => banUser({ userId: row.id }))}>
+                <Button size="sm" variant="outline" disabled={isPending} onClick={() => doAction(() => ban.mutateAsync({ userId: row.id }))}>
                   Ban
                 </Button>
               ) : null}
               {canDelete ? (
-                <Button size="sm" variant="destructive" disabled={isPending} onClick={() => doAction(() => deleteUser(row.id))}>
+                <Button size="sm" variant="destructive" disabled={isPending} onClick={() => doAction(() => remove.mutateAsync(row.id))}>
                   Delete
                 </Button>
               ) : null}

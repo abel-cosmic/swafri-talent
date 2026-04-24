@@ -5,15 +5,16 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { adminUpdateTalent } from "@/actions/talent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTalentMutations } from "@/lib/query-hooks";
 
 export function EditTalentForm({ talent }: { talent: TalentProfile }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { update } = useTalentMutations();
 
   function onSubmit(formData: FormData) {
     const payload = {
@@ -25,7 +26,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
       status: String(formData.get("status") ?? "PENDING"),
     };
     startTransition(async () => {
-      const result = await adminUpdateTalent(talent.id, payload);
+      const result = await update.mutateAsync({ id: talent.id, payload });
       if (!result.success) {
         toast.error(result.error ?? "Update failed.");
         return;

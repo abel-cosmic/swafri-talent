@@ -3,16 +3,17 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { submitTalent } from "@/actions/talent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTalentMutations } from "@/lib/query-hooks";
 
 export function TalentForm() {
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [success, setSuccess] = useState(false);
+  const { submit } = useTalentMutations();
 
   function onSubmit(formData: FormData) {
     const payload = {
@@ -24,7 +25,7 @@ export function TalentForm() {
     };
 
     startTransition(async () => {
-      const result = await submitTalent(payload);
+      const result = await submit.mutateAsync(payload);
       if (!result.success) {
         setSuccess(false);
         setErrors(result.fieldErrors ?? {});
