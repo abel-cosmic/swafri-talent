@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
-import { adminLogin } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { authClient } from "@/lib/auth-client"
 import { Input } from "@/components/ui/input"
 import { ROUTES } from "@/lib/routes"
 
@@ -25,12 +25,17 @@ export function AdminLoginForm() {
   const isPending = form.formState.isSubmitting
 
   async function onSubmit(values: AdminLoginValues) {
-    const result = await adminLogin(values)
-    if (!result.success) {
-      toast.error(result.error ?? "Login failed")
+    const { error } = await authClient.signIn.email({
+      email: values.email,
+      password: values.password,
+    })
+
+    if (error) {
+      toast.error(error.message ?? "Login failed")
       return
     }
-    router.push(ROUTES.adminDashboard)
+
+    router.replace(ROUTES.adminDashboard)
     router.refresh()
   }
 

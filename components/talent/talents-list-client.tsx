@@ -4,7 +4,7 @@ import { TalentStatus } from "@/generated/prisma/browser"
 import { useEffect, useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 
-import { TalentCard } from "@/components/talent/talent-card"
+import { TalentBrowseCard } from "@/components/talent/talent-browse-card"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -277,7 +277,7 @@ export function TalentsListClient({
       {isError ? <p className="text-destructive">Failed to load talents.</p> : null}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((talent) => (
-          <TalentCard key={talent.id} talent={talent} />
+          <TalentBrowseCard key={talent.id} talent={talent} />
         ))}
       </div>
       <div className="mt-7 flex gap-3">

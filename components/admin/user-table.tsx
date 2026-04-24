@@ -1,15 +1,15 @@
 "use client"
 
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, type ColumnDef, type ColumnFiltersState, type SortingState, useReactTable } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown } from "lucide-react"
-import { useMemo, useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { useCallback, useMemo, useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -24,46 +24,7 @@ type UserRecord = {
   createdAt?: string | Date
 }
 
-function SetRoleControl({ userId, disabled, onSubmit }: { userId: string; disabled: boolean; onSubmit: (userId: string, role: "superAdmin" | "admin" | "moderator" | "user") => void }) {
-  const form = useForm<{ role: "superAdmin" | "admin" | "moderator" | "user" }>({
-    defaultValues: { role: "user" },
-  })
-
-  return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit((values) => onSubmit(userId, values.role))}
-        className="inline-flex items-center gap-2"
-      >
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem className="space-y-0">
-              <Select value={field.value} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger className="h-8 w-[122px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="user">user</SelectItem>
-                  <SelectItem value="moderator">moderator</SelectItem>
-                  <SelectItem value="admin">admin</SelectItem>
-                  <SelectItem value="superAdmin">superAdmin</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button size="sm" disabled={disabled}>
-          Set Role
-        </Button>
-      </form>
-    </Form>
-  )
-}
+type UserRole = "superAdmin" | "admin" | "moderator" | "user"
 
 export function UserTable({
   rows,
@@ -80,15 +41,56 @@ export function UserTable({
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
+  const [menuAction, setMenuAction] = useState<{ kind: "ban" | "delete"; user: UserRecord } | null>(null)
+  const [roleDialogUser, setRoleDialogUser] = useState<UserRecord | null>(null)
+  const [selectedRole, setSelectedRole] = useState<UserRole>("user")
   const { setRole, ban, remove } = useUserMutations()
 
-  function doAction(fn: () => Promise<{ success: boolean; error?: string }>) {
+  function doAction(fn: () => Promise<{ success: boolean; error?: string }>, successMessage = "Action completed") {
     startTransition(async () => {
       const result = await fn()
       if (!result.success) toast.error(result.error ?? "Action failed")
-      else toast.success("Action completed")
+      else toast.success(successMessage)
     })
   }
+
+  const openSetRoleDialog = useCallback((user: UserRecord) => {
+    setRoleDialogUser(user)
+    setSelectedRole((user.role as UserRole | undefined) ?? "user")
+  }, [])
+
+  const renderActionMenu = useCallback(
+    (user: UserRecord) => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon-sm" aria-label={`Open actions for ${user.name}`}>
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-44">
+          {canSetRole ? (
+            <DropdownMenuItem onSelect={() => openSetRoleDialog(user)}>
+              Set Role
+            </DropdownMenuItem>
+          ) : null}
+          {canBan ? (
+            <DropdownMenuItem onSelect={() => setMenuAction({ kind: "ban", user })}>
+              Ban User
+            </DropdownMenuItem>
+          ) : null}
+          {canDelete ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onSelect={() => setMenuAction({ kind: "delete", user })}>
+                Delete User
+              </DropdownMenuItem>
+            </>
+          ) : null}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
+    [canBan, canDelete, canSetRole, openSetRoleDialog],
+  )
 
   const columns = useMemo<ColumnDef<UserRecord>[]>(
     () => [
@@ -124,40 +126,10 @@ export function UserTable({
         id: "actions",
         enableHiding: false,
         header: "Actions",
-        cell: ({ row }) => (
-          <div className="flex flex-wrap gap-2">
-            {canSetRole ? (
-              <SetRoleControl
-                userId={row.original.id}
-                disabled={isPending}
-                onSubmit={(userId, role) => doAction(() => setRole.mutateAsync({ userId, role }))}
-              />
-            ) : null}
-            {canBan ? (
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={isPending}
-                onClick={() => doAction(() => ban.mutateAsync({ userId: row.original.id }))}
-              >
-                Ban
-              </Button>
-            ) : null}
-            {canDelete ? (
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={isPending}
-                onClick={() => doAction(() => remove.mutateAsync(row.original.id))}
-              >
-                Delete
-              </Button>
-            ) : null}
-          </div>
-        ),
+        cell: ({ row }) => renderActionMenu(row.original),
       },
     ],
-    [ban, canBan, canDelete, canSetRole, isPending, remove, setRole],
+    [renderActionMenu],
   )
 
   const table = useReactTable({
@@ -175,12 +147,12 @@ export function UserTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           placeholder="Filter by email..."
           value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
           onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
-          className="w-full max-w-sm"
+          className="w-full sm:max-w-sm"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -205,36 +177,75 @@ export function UserTable({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+      <div className="space-y-3 lg:hidden">
+        {table.getRowModel().rows?.length ? (
+          table.getRowModel().rows.map((row) => (
+            <div key={row.id} className="space-y-3 rounded-xl border border-border/80 bg-card p-4 shadow-(--cursor-shadow-ambient)">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Name</p>
+                  <p className="font-medium">{row.original.name}</p>
+                </div>
+                {renderActionMenu(row.original)}
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Email</p>
+                <p className="break-all">{row.original.email}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Role</p>
+                  <Badge variant="secondary">{row.original.role ?? "user"}</Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Banned</p>
+                  <p>{row.original.banned ? "Yes" : "No"}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Created</p>
+                <p>{row.original.createdAt ? new Date(row.original.createdAt).toLocaleDateString() : "-"}</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-xl border border-border/80 bg-card p-6 text-center text-sm text-muted-foreground shadow-(--cursor-shadow-ambient)">
+            No users found.
+          </div>
+        )}
+      </div>
+      <div className="hidden lg:block">
+        <Table className="min-w-[760px]">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell className="h-20 text-center" colSpan={columns.length}>
-                No users found.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell className="h-20 text-center" colSpan={table.getVisibleLeafColumns().length}>
+                  No users found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
       <div className="flex items-center justify-end gap-2">
         <Button
           variant="outline"
@@ -248,6 +259,80 @@ export function UserTable({
           Next
         </Button>
       </div>
+      <Dialog open={Boolean(roleDialogUser)} onOpenChange={(open) => (!open ? setRoleDialogUser(null) : null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set User Role</DialogTitle>
+            <DialogDescription>
+              Choose a new role for <span className="font-medium">{roleDialogUser?.email ?? ""}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">user</SelectItem>
+              <SelectItem value="moderator">moderator</SelectItem>
+              <SelectItem value="admin">admin</SelectItem>
+              <SelectItem value="superAdmin">superAdmin</SelectItem>
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRoleDialogUser(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!roleDialogUser || isPending}
+              onClick={() => {
+                if (!roleDialogUser) return
+                doAction(
+                  () => setRole.mutateAsync({ userId: roleDialogUser.id, role: selectedRole }),
+                  "Role updated",
+                )
+                setRoleDialogUser(null)
+              }}
+            >
+              Save Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <AlertDialog open={Boolean(menuAction)} onOpenChange={(open) => (!open ? setMenuAction(null) : null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {menuAction?.kind === "delete" ? "Delete User" : "Ban User"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {menuAction?.kind === "delete"
+                ? `Delete ${menuAction.user.email}? This cannot be undone.`
+                : `Ban ${menuAction?.user.email}? They will lose access until unbanned.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={menuAction?.kind === "delete" ? "destructive" : "default"}
+              disabled={!menuAction || isPending}
+              onClick={() => {
+                if (!menuAction) return
+                if (menuAction.kind === "delete") {
+                  doAction(() => remove.mutateAsync(menuAction.user.id), "User deleted")
+                } else {
+                  doAction(() => ban.mutateAsync({ userId: menuAction.user.id }), "User banned")
+                }
+                setMenuAction(null)
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

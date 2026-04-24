@@ -1,6 +1,5 @@
 "use client"
 
-import { useUploadFile } from "@better-upload/client"
 import { FileUp, ImagePlus, LoaderCircle } from "lucide-react"
 import { type TalentProfile } from "@/generated/prisma/browser"
 import { useRouter } from "next/navigation"
@@ -22,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useTalentMutations } from "@/lib/query-hooks"
 import { ROUTES } from "@/lib/routes"
+import { useUploadThing } from "@/lib/uploadthing"
 import { resolveUploadedFileUrl } from "@/lib/uploads"
 
 type EditTalentFormValues = {
@@ -56,11 +56,12 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
   })
   const uploadedProfileImage = useWatch({ control: form.control, name: "profileImageUrl" })
   const uploadedResumeName = useWatch({ control: form.control, name: "resumeFileName" })
-  const imageUploader = useUploadFile({
-    api: "/api/upload",
-    route: "talentImage",
-    onUploadComplete: ({ file }) => {
-      const fileUrl = resolveUploadedFileUrl(file.objectInfo.key)
+  const uploadedResumeUrl = useWatch({ control: form.control, name: "resumeUrl" })
+  const imageUploader = useUploadThing("talentImageUploader", {
+    onClientUploadComplete: (files) => {
+      const uploadedFile = files[0]
+      const fileUrl =
+        uploadedFile?.ufsUrl ?? uploadedFile?.url ?? resolveUploadedFileUrl(uploadedFile?.key)
       if (!fileUrl) {
         toast.error("Image upload failed.")
         return
@@ -68,24 +69,24 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
       form.setValue("profileImageUrl", fileUrl, { shouldValidate: true })
       toast.success("Profile image uploaded.")
     },
-    onError: (error) => {
+    onUploadError: (error) => {
       toast.error(error.message)
     },
   })
-  const resumeUploader = useUploadFile({
-    api: "/api/upload",
-    route: "talentResume",
-    onUploadComplete: ({ file }) => {
-      const fileUrl = resolveUploadedFileUrl(file.objectInfo.key)
+  const resumeUploader = useUploadThing("talentResumeUploader", {
+    onClientUploadComplete: (files) => {
+      const uploadedFile = files[0]
+      const fileUrl =
+        uploadedFile?.ufsUrl ?? uploadedFile?.url ?? resolveUploadedFileUrl(uploadedFile?.key)
       if (!fileUrl) {
         toast.error("Resume upload failed.")
         return
       }
       form.setValue("resumeUrl", fileUrl, { shouldValidate: true })
-      form.setValue("resumeFileName", file.name, { shouldValidate: true })
+      form.setValue("resumeFileName", uploadedFile?.name ?? "", { shouldValidate: true })
       toast.success("Resume uploaded.")
     },
-    onError: (error) => {
+    onUploadError: (error) => {
       toast.error(error.message)
     },
   })
@@ -214,7 +215,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
                 if (!file) {
                   return
                 }
-                await imageUploader.upload(file)
+                await imageUploader.startUpload([file])
                 event.currentTarget.value = ""
               }}
             />
@@ -222,15 +223,25 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
               type="button"
               variant="outline"
               className="w-full rounded-full"
-              disabled={imageUploader.isPending}
+              disabled={imageUploader.isUploading}
               onClick={() => imageInputRef.current?.click()}
             >
-              {imageUploader.isPending ? <LoaderCircle className="animate-spin" /> : <ImagePlus />}
-              {imageUploader.isPending ? "Uploading image..." : "Choose image"}
+              {imageUploader.isUploading ? <LoaderCircle className="animate-spin" /> : <ImagePlus />}
+              {imageUploader.isUploading ? "Uploading image..." : "Choose image"}
             </Button>
             <p className="text-xs text-muted-foreground">
               {uploadedProfileImage ? "Image uploaded." : "JPG or PNG recommended."}
             </p>
+            {uploadedProfileImage ? (
+              <div className="overflow-hidden rounded-lg border border-border bg-muted/20 p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={uploadedProfileImage}
+                  alt="Uploaded profile preview"
+                  className="h-56 w-full rounded-md object-contain"
+                />
+              </div>
+            ) : null}
           </FormItem>
           <FormItem className="space-y-3 rounded-xl border border-border bg-background/40 p-4">
             <FormLabel>Resume (PDF)</FormLabel>
@@ -244,7 +255,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
                 if (!file) {
                   return
                 }
-                await resumeUploader.upload(file)
+                await resumeUploader.startUpload([file])
                 event.currentTarget.value = ""
               }}
             />
@@ -252,15 +263,32 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
               type="button"
               variant="outline"
               className="w-full rounded-full"
-              disabled={resumeUploader.isPending}
+              disabled={resumeUploader.isUploading}
               onClick={() => resumeInputRef.current?.click()}
             >
-              {resumeUploader.isPending ? <LoaderCircle className="animate-spin" /> : <FileUp />}
-              {resumeUploader.isPending ? "Uploading resume..." : "Choose resume"}
+              {resumeUploader.isUploading ? <LoaderCircle className="animate-spin" /> : <FileUp />}
+              {resumeUploader.isUploading ? "Uploading resume..." : "Choose resume"}
             </Button>
             <p className="text-xs text-muted-foreground">
               {uploadedResumeName ? `Uploaded: ${uploadedResumeName}` : "Attach a PDF resume (optional)."}
             </p>
+            {uploadedResumeUrl ? (
+              <div className="space-y-2">
+                <a
+                  href={uploadedResumeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-primary underline underline-offset-2"
+                >
+                  Preview uploaded resume
+                </a>
+                <iframe
+                  src={uploadedResumeUrl}
+                  title="Uploaded resume preview"
+                  className="h-56 w-full rounded-lg border border-border"
+                />
+              </div>
+            ) : null}
           </FormItem>
         </div>
         <Button size="lg" disabled={isPending}>

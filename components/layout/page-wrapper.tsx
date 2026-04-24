@@ -10,7 +10,7 @@ type PageWrapperProps = {
 
 export function PageWrapper({ title, description, actions, children, className }: PageWrapperProps) {
   return (
-    <section className={cn("mx-auto w-full space-y-6", className)}>
+    <section className={cn("mx-auto w-full min-w-0 space-y-6", className)}>
       {title || description || actions ? (
         <header className="rounded-2xl border border-border bg-card p-5 md:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -22,7 +22,7 @@ export function PageWrapper({ title, description, actions, children, className }
           </div>
         </header>
       ) : null}
-      <div>{children}</div>
+      <div className="min-w-0">{children}</div>
     </section>
   )
 }

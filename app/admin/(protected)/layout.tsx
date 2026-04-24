@@ -11,7 +11,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
   if (!session) redirect(ROUTES.adminLogin);
 
   return (
-    <div className="grid grid-cols-1 rounded-2xl border border-border/80 bg-card shadow-(--cursor-shadow-ambient) md:grid-cols-[250px_1fr]">
+    <div className="grid grid-cols-1 rounded-2xl border border-border/80 bg-card shadow-(--cursor-shadow-ambient) md:grid-cols-[220px_minmax(0,1fr)]">
       <aside className="border-b border-border/70 bg-muted/50 p-5 md:border-r md:border-b-0">
         <h2 className="mb-4 font-display text-display-md">Admin</h2>
         <AdminNav role={session.user.role as string | undefined} />
@@ -19,7 +19,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
           <AdminLogoutButton />
         </div>
       </aside>
-      <main className="p-4 sm:p-5 md:p-7">{children}</main>
+      <main className="min-w-0 p-4 sm:p-5 md:p-7">{children}</main>
     </div>
   )
 }

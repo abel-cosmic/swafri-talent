@@ -24,7 +24,13 @@ type CreateUserValues = {
   role: "user" | "moderator" | "admin" | "superAdmin"
 }
 
-export function CreateUserForm() {
+export function CreateUserForm({
+  mode = "card",
+  onCreated,
+}: {
+  mode?: "card" | "dialog"
+  onCreated?: () => void
+}) {
   const { create } = useUserMutations()
   const form = useForm<CreateUserValues>({
     defaultValues: {
@@ -46,15 +52,18 @@ export function CreateUserForm() {
 
     form.reset({ name: "", email: "", password: "", role: "user" })
     toast.success("User created")
+    onCreated?.()
   }
+
+  const isDialog = mode === "dialog"
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="grid gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient)"
+        className={isDialog ? "grid gap-4" : "grid gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient)"}
       >
-        <h2 className="font-display text-display-md">Create User</h2>
+        {!isDialog ? <h2 className="font-display text-display-md">Create User</h2> : null}
         <FormField
           control={form.control}
           name="name"
