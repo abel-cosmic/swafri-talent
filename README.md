@@ -1,6 +1,6 @@
 # Swafri Talent
 
-This project is a Next.js app with Prisma (SQLite), Better Auth, and UploadThing.
+This project is a Next.js app with Prisma (PostgreSQL), Better Auth, and UploadThing.
 
 ![Swafri Talent demo](public/demo.png)
 
@@ -32,7 +32,7 @@ pnpm install
 
 Copy `.env.example` to `.env` in the project root and update values:
 
-- `DATABASE_URL` (example: `file:./dev.db`)
+- `DATABASE_URL` (example: `postgresql://USER:PASSWORD@HOST:5432/DB_NAME?schema=public`)
 - `BETTER_AUTH_SECRET` (use a long random secret)
 - `BETTER_AUTH_URL` (example: `http://localhost:3000`)
 - `UPLOADTHING_TOKEN` (required for file upload features)
@@ -88,4 +88,3 @@ pnpm start
 - **Cannot sign in with seeded accounts**: run `pnpm db:seed` again and confirm `SEED_`* values are set in `.env`.
 - **Seed appears to do nothing**: existing users are not overwritten by seed logic.
 - **Upload feature fails**: verify `UPLOADTHING_TOKEN` is valid.
-

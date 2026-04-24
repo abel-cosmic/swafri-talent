@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { ac, roles } from "@/lib/permissions";
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, { provider: "sqlite" }),
+  database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,
   },
