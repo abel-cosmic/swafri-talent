@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useTalentMutations } from "@/lib/query-hooks";
+import { ROUTES } from "@/lib/routes";
 
 export function EditTalentForm({ talent }: { talent: TalentProfile }) {
   const [isPending, startTransition] = useTransition();
@@ -32,7 +33,7 @@ export function EditTalentForm({ talent }: { talent: TalentProfile }) {
         return;
       }
       toast.success("Talent profile updated.");
-      router.push("/admin");
+      router.push(ROUTES.adminDashboard);
       router.refresh();
     });
   }

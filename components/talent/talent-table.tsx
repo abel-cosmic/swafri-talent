@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTalentMutations } from "@/lib/query-hooks";
+import { routeBuilders } from "@/lib/routes/builders";
 
 function StatusBadge({ status }: { status: TalentStatus }) {
   if (status === "APPROVED") return <Badge className="bg-green-100 text-green-800">APPROVED</Badge>;
@@ -77,7 +78,7 @@ export function TalentTable({
               ) : null}
               {canUpdate ? (
                 <Button size="sm" variant="secondary" asChild>
-                  <Link href={`/admin/talents/${row.id}/edit`}>Edit</Link>
+                  <Link href={routeBuilders.adminTalentEdit(row.id)}>Edit</Link>
                 </Button>
               ) : null}
               {canDelete ? (

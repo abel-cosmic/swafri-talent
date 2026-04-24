@@ -3,15 +3,16 @@ import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { AdminAuthView } from "@/components/admin/admin-auth-view";
+import { PageWrapper } from "@/components/layout/page-wrapper";
+import { ROUTES } from "@/lib/routes";
 
 export default async function AdminLoginPage() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (session) redirect("/admin");
+  if (session) redirect(ROUTES.adminDashboard);
 
   return (
-    <main className="mx-auto max-w-md p-6">
-      <h1 className="mb-4 text-2xl font-semibold">Admin Login</h1>
+    <PageWrapper title="Admin Login" className="max-w-md">
       <AdminAuthView />
-    </main>
+    </PageWrapper>
   );
 }

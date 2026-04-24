@@ -1,14 +1,11 @@
 import { Geist_Mono, Inter } from "next/font/google"
 import type { Metadata } from "next"
-import { AuthUIProvider } from "@daveyplate/better-auth-ui"
 
 import "./globals.css"
 import "@daveyplate/better-auth-ui/css"
-import { QueryProvider } from "@/components/query-provider"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
+import { AppShell } from "@/components/layout/app-shell"
+import { AppProviders } from "@/components/providers/app-providers"
 import { cn } from "@/lib/utils"
-import { AuthProvider } from "@/components/providers/auth"
 
 export const metadata: Metadata = {
   title: "Talent Management System",
@@ -39,12 +36,9 @@ export default function RootLayout({
       )}
     >
       <body>
-        <QueryProvider>
-          <ThemeProvider>
-            <AuthProvider> {children} </AuthProvider>
-            <Toaster />
-          </ThemeProvider>
-        </QueryProvider>
+        <AppProviders>
+          <AppShell>{children}</AppShell>
+        </AppProviders>
       </body>
     </html>
   )

@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { getTalentById } from "@/actions/talent";
+import { PageWrapper } from "@/components/layout/page-wrapper";
 import { EditTalentForm } from "@/components/talent/edit-talent-form";
 import { auth } from "@/lib/auth";
 import { can } from "@/lib/role-permissions";
@@ -16,9 +17,8 @@ export default async function AdminEditTalentPage({ params }: { params: Promise<
   if (!talent) notFound();
 
   return (
-    <div className="max-w-2xl space-y-4">
-      <h1 className="text-2xl font-semibold">Edit Talent</h1>
+    <PageWrapper title="Edit Talent" className="max-w-2xl">
       <EditTalentForm talent={talent} />
-    </div>
+    </PageWrapper>
   );
 }

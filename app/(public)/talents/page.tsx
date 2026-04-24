@@ -1,4 +1,5 @@
 import { TalentsListClient } from "@/components/talent/talents-list-client";
+import { PageWrapper } from "@/components/layout/page-wrapper";
 
 type SearchParams = Promise<{ page?: string; search?: string }>;
 
@@ -8,9 +9,8 @@ export default async function TalentsPage({ searchParams }: { searchParams: Sear
   const search = params.search ?? "";
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <h1 className="text-2xl font-semibold">Approved Talent Profiles</h1>
+    <PageWrapper title="Approved Talent Profiles" className="max-w-5xl">
       <TalentsListClient page={page} search={search} />
-    </main>
+    </PageWrapper>
   );
 }

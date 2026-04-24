@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { adminLogout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 
 export function AdminLogoutButton() {
   const [isPending, startTransition] = useTransition();
@@ -17,7 +18,7 @@ export function AdminLogoutButton() {
       onClick={() =>
         startTransition(async () => {
           await adminLogout();
-          router.push("/admin/login");
+          router.push(ROUTES.adminLogin);
           router.refresh();
         })
       }

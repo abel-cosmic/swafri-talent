@@ -1,18 +1,17 @@
 import Link from "next/link";
 
+import { getAdminNavRoutes } from "@/lib/routes/navigation";
+
 export function AdminNav({ role }: { role?: string | null }) {
-  const canSeeUsers = role === "superAdmin" || role === "admin";
+  const routes = getAdminNavRoutes(role);
 
   return (
     <nav className="space-y-2">
-      <Link href="/admin" className="block rounded px-3 py-2 hover:bg-muted">
-        Dashboard
-      </Link>
-      {canSeeUsers ? (
-        <Link href="/admin/users" className="block rounded px-3 py-2 hover:bg-muted">
-          User Management
+      {routes.map((route) => (
+        <Link key={route.key} href={route.path} className="block rounded px-3 py-2 hover:bg-muted">
+          {route.label}
         </Link>
-      ) : null}
+      ))}
     </nav>
   );
 }

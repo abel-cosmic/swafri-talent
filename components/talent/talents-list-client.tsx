@@ -7,6 +7,7 @@ import { TalentCard } from "@/components/talent/talent-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTalentsQuery } from "@/lib/query-hooks";
+import { routeBuilders } from "@/lib/routes/builders";
 
 export function TalentsListClient({ page, search }: { page: number; search: string }) {
   const { data, isLoading, isError } = useTalentsQuery({
@@ -35,12 +36,12 @@ export function TalentsListClient({ page, search }: { page: number; search: stri
       <div className="mt-6 flex gap-3">
         {page > 1 ? (
           <Button variant="outline" asChild>
-            <Link href={`/talents?page=${page - 1}&search=${encodeURIComponent(search)}`}>Previous</Link>
+            <Link href={routeBuilders.talentsList({ page: page - 1, search })}>Previous</Link>
           </Button>
         ) : null}
         {hasNext ? (
           <Button variant="outline" asChild>
-            <Link href={`/talents?page=${page + 1}&search=${encodeURIComponent(search)}`}>Next</Link>
+            <Link href={routeBuilders.talentsList({ page: page + 1, search })}>Next</Link>
           </Button>
         ) : null}
       </div>
