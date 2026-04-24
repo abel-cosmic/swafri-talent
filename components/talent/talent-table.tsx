@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { TalentStatus, type TalentProfile } from "@/generated/prisma/client";
+import { TalentStatus, type TalentProfile } from "@/generated/prisma/browser";
 import { useTransition } from "react";
 import { toast } from "sonner";
 

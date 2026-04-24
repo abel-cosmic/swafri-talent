@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 import { auth } from "@/lib/auth";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
@@ -23,8 +23,6 @@ export async function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
-
-export const runtime = "nodejs";
 
 export const config = {
   matcher: ["/admin/:path*"],

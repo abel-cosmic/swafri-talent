@@ -1,6 +1,6 @@
 "use client";
 
-import { type TalentProfile } from "@/generated/prisma/client";
+import { type TalentProfile } from "@/generated/prisma/browser";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";

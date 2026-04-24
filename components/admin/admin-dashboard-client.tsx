@@ -1,6 +1,6 @@
 "use client";
 
-import { TalentStatus } from "@/generated/prisma/client";
+import { TalentStatus } from "@/generated/prisma/browser";
 
 import { TalentTable } from "@/components/talent/talent-table";
 import { useTalentsQuery } from "@/lib/query-hooks";

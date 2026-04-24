@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { TalentStatus, type TalentProfile } from "@/generated/prisma/client";
+import { TalentStatus, type TalentProfile } from "@/generated/prisma/browser";
 
 import {
   adminApproveTalent,

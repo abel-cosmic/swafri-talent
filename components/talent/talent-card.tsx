@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { TalentProfile } from "@/generated/prisma/client";
+import type { TalentProfile } from "@/generated/prisma/browser";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

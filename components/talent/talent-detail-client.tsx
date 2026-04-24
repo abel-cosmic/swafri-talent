@@ -1,6 +1,6 @@
 "use client";
 
-import { TalentStatus } from "@/generated/prisma/client";
+import { TalentStatus } from "@/generated/prisma/browser";
 import { useTalentDetailQuery } from "@/lib/query-hooks";
 
 export function TalentDetailClient({ id }: { id: string }) {

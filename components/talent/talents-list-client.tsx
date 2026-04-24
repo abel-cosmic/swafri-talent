@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { TalentStatus } from "@/generated/prisma/client";
+import { TalentStatus } from "@/generated/prisma/browser";
 
 import { TalentCard } from "@/components/talent/talent-card";
 import { Button } from "@/components/ui/button";

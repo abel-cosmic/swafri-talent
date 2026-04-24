@@ -5,7 +5,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { AdminLogoutButton } from "@/components/admin/admin-logout-button";
 import { auth } from "@/lib/auth";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/admin/login");
 
