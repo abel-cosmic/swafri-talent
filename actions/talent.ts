@@ -3,7 +3,7 @@
 import { TalentStatus, type Prisma, type TalentProfile } from "@/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { talentSubmissionSchema, talentUpdateSchema } from "@/lib/schemas";
+import { talentFiltersSchema, talentSubmissionSchema, talentUpdateSchema } from "@/lib/schemas";
 import type { ActionResult } from "@/types/actions";
 import { requirePermission } from "@/actions/_auth";
 
@@ -26,6 +26,8 @@ export async function submitTalent(input: unknown): Promise<ActionResult> {
 export async function getTalents(params?: {
   status?: TalentStatus;
   search?: string;
+  skill?: string;
+  minYears?: number;
   page?: number;
   pageSize?: number;
   adminView?: boolean;
@@ -33,7 +35,15 @@ export async function getTalents(params?: {
   const page = params?.page ?? 1;
   const pageSize = params?.pageSize ?? 10;
   const status = params?.adminView ? params?.status : TalentStatus.APPROVED;
-  const search = params?.search?.trim();
+  const parsedFilters = talentFiltersSchema.safeParse({
+    search: params?.search,
+    skill: params?.skill,
+    minYears: params?.minYears,
+  });
+
+  const search = parsedFilters.success ? parsedFilters.data.search : undefined;
+  const skill = parsedFilters.success ? parsedFilters.data.skill : undefined;
+  const minYears = parsedFilters.success ? parsedFilters.data.minYears : undefined;
 
   const where: Prisma.TalentProfileWhereInput = {
     ...(status ? { status } : {}),
@@ -42,6 +52,8 @@ export async function getTalents(params?: {
           OR: [{ fullName: { contains: search } }, { primarySkill: { contains: search } }, { email: { contains: search } }],
         }
       : {}),
+    ...(skill ? { primarySkill: { contains: skill } } : {}),
+    ...(typeof minYears === "number" ? { yearsOfExperience: { gte: minYears } } : {}),
   };
 
   const [items, total] = await Promise.all([

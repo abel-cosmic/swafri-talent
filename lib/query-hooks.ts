@@ -18,6 +18,8 @@ import { queryKeys } from "@/lib/query-keys";
 type TalentListParams = {
   page?: number;
   search?: string;
+  skill?: string;
+  minYears?: number;
   status?: TalentStatus;
   adminView?: boolean;
 };

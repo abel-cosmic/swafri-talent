@@ -6,7 +6,6 @@ export default function SubmitPage() {
     <PageWrapper
       title="Submit Your Talent Profile"
       description="Share your profile details for moderation. Every field helps teams match your strengths faster."
-      className="max-w-2xl"
     >
       <TalentForm />
     </PageWrapper>

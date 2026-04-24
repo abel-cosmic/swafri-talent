@@ -1,46 +1,71 @@
-"use client";
+"use client"
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { LoaderCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import { z } from "zod"
 
-import { adminLogin } from "@/actions/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ROUTES } from "@/lib/routes";
+import { adminLogin } from "@/actions/auth"
+import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { ROUTES } from "@/lib/routes"
+import { adminLoginSchema } from "@/lib/schemas"
+
+type AdminLoginValues = z.input<typeof adminLoginSchema>
 
 export function AdminLoginForm() {
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  const router = useRouter()
+  const form = useForm<AdminLoginValues>({
+    resolver: zodResolver(adminLoginSchema),
+    defaultValues: { email: "", password: "" },
+  })
 
-  function onSubmit(formData: FormData) {
-    const payload = {
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-    };
-    startTransition(async () => {
-      const result = await adminLogin(payload);
-      if (!result.success) {
-        toast.error(result.error ?? "Login failed");
-        return;
-      }
-      router.push(ROUTES.adminDashboard);
-      router.refresh();
-    });
+  const isPending = form.formState.isSubmitting
+
+  async function onSubmit(values: AdminLoginValues) {
+    const result = await adminLogin(values)
+    if (!result.success) {
+      toast.error(result.error ?? "Login failed")
+      return
+    }
+    router.push(ROUTES.adminDashboard)
+    router.refresh()
   }
 
   return (
-    <form action={onSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" required />
-      </div>
-      <div>
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" required />
-      </div>
-      <Button disabled={isPending}>{isPending ? "Signing in..." : "Sign in"}</Button>
-    </form>
-  );
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button disabled={isPending}>{isPending ? <LoaderCircle className="animate-spin" /> : null}{isPending ? "Signing in..." : "Sign in"}</Button>
+      </form>
+    </Form>
+  )
 }

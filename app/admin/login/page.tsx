@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
-import { AdminAuthView } from "@/components/admin/admin-auth-view";
+import { AdminLoginForm } from "@/components/admin/admin-login-form";
 import { PageWrapper } from "@/components/layout/page-wrapper";
 import { ROUTES } from "@/lib/routes";
 
@@ -14,9 +14,10 @@ export default async function AdminLoginPage() {
     <PageWrapper
       title="Admin Login"
       description="Sign in to access moderation and user management tools."
-      className="max-w-lg"
     >
-      <AdminAuthView />
+      <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-(--cursor-shadow-ambient) md:p-6">
+        <AdminLoginForm />
+      </div>
     </PageWrapper>
   )
 }

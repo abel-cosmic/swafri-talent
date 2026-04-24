@@ -20,7 +20,6 @@ export default async function AdminEditTalentPage({ params }: { params: Promise<
     <PageWrapper
       title="Edit Talent"
       description="Adjust profile details and moderation status while preserving consistent directory quality."
-      className="max-w-2xl"
     >
       <EditTalentForm talent={talent} />
     </PageWrapper>

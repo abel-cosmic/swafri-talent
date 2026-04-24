@@ -1,84 +1,228 @@
-"use client";
+"use client"
 
-import { type TalentProfile } from "@/generated/prisma/browser";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { LoaderCircle } from "lucide-react"
+import { type TalentProfile } from "@/generated/prisma/browser"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import { z } from "zod"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useTalentMutations } from "@/lib/query-hooks";
-import { ROUTES } from "@/lib/routes";
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { useTalentMutations } from "@/lib/query-hooks"
+import { ROUTES } from "@/lib/routes"
+import { talentUpdateSchema } from "@/lib/schemas"
+import { UploadButton } from "@/lib/uploadthing"
+
+type EditTalentFormValues = z.input<typeof talentUpdateSchema> & {
+  status: "PENDING" | "APPROVED" | "REJECTED"
+}
+
+type UploadedFile = {
+  name?: string
+  ufsUrl?: string
+  url?: string
+  serverData?: {
+    name?: string
+    url?: string
+  }
+}
+
+function normalizeUploadedFile(file: UploadedFile | undefined) {
+  return {
+    url: file?.serverData?.url ?? file?.ufsUrl ?? file?.url ?? "",
+    name: file?.serverData?.name ?? file?.name ?? "",
+  }
+}
 
 export function EditTalentForm({ talent }: { talent: TalentProfile }) {
-  const [isPending, startTransition] = useTransition();
-  const [statusValue, setStatusValue] = useState<"PENDING" | "APPROVED" | "REJECTED">(talent.status);
-  const router = useRouter();
-  const { update } = useTalentMutations();
+  const router = useRouter()
+  const { update } = useTalentMutations()
+  const form = useForm<EditTalentFormValues>({
+    resolver: zodResolver(talentUpdateSchema.extend({ status: z.enum(["PENDING", "APPROVED", "REJECTED"]) })),
+    defaultValues: {
+      fullName: talent.fullName,
+      email: talent.email,
+      primarySkill: talent.primarySkill,
+      yearsOfExperience: talent.yearsOfExperience,
+      description: talent.description,
+      status: talent.status,
+      profileImageUrl: talent.profileImageUrl ?? "",
+      resumeUrl: talent.resumeUrl ?? "",
+      resumeFileName: talent.resumeFileName ?? "",
+    },
+  })
 
-  function onSubmit(formData: FormData) {
-    const payload = {
-      fullName: String(formData.get("fullName") ?? ""),
-      email: String(formData.get("email") ?? ""),
-      primarySkill: String(formData.get("primarySkill") ?? ""),
-      yearsOfExperience: String(formData.get("yearsOfExperience") ?? ""),
-      description: String(formData.get("description") ?? ""),
-      status: String(formData.get("status") ?? "PENDING"),
-    };
-    startTransition(async () => {
-      const result = await update.mutateAsync({ id: talent.id, payload });
-      if (!result.success) {
-        toast.error(result.error ?? "Update failed.");
-        return;
-      }
-      toast.success("Talent profile updated.");
-      router.push(ROUTES.adminDashboard);
-      router.refresh();
-    });
+  const isPending = form.formState.isSubmitting
+
+  async function onSubmit(values: EditTalentFormValues) {
+    const result = await update.mutateAsync({ id: talent.id, payload: values })
+    if (!result.success) {
+      toast.error(result.error ?? "Update failed.")
+      return
+    }
+    toast.success("Talent profile updated.")
+    router.push(ROUTES.adminDashboard)
+    router.refresh()
   }
 
   return (
-    <form action={onSubmit} className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) md:p-6">
-      <div>
-        <Label htmlFor="fullName">Full Name</Label>
-        <Input id="fullName" name="fullName" defaultValue={talent.fullName} required />
-      </div>
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" defaultValue={talent.email} required />
-      </div>
-      <div>
-        <Label htmlFor="primarySkill">Primary Skill</Label>
-        <Input id="primarySkill" name="primarySkill" defaultValue={talent.primarySkill} required />
-      </div>
-      <div>
-        <Label htmlFor="yearsOfExperience">Years of Experience</Label>
-        <Input id="yearsOfExperience" name="yearsOfExperience" type="number" defaultValue={talent.yearsOfExperience} required />
-      </div>
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea id="description" name="description" defaultValue={talent.description} required />
-      </div>
-      <div>
-        <Label htmlFor="status">Status</Label>
-        <input type="hidden" name="status" value={statusValue} />
-        <Select value={statusValue} onValueChange={(value) => setStatusValue(value as "PENDING" | "APPROVED" | "REJECTED")}>
-          <SelectTrigger id="status" className="w-full">
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="PENDING">PENDING</SelectItem>
-            <SelectItem value="APPROVED">APPROVED</SelectItem>
-            <SelectItem value="REJECTED">REJECTED</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <Button size="lg" disabled={isPending}>
-        {isPending ? "Saving..." : "Save changes"}
-      </Button>
-    </form>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) md:p-6"
+      >
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="primarySkill"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Primary Skill</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="yearsOfExperience"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Years Of Experience</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={0}
+                  value={field.value}
+                  onChange={(event) => field.onChange(event.currentTarget.valueAsNumber)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="PENDING">PENDING</SelectItem>
+                  <SelectItem value="APPROVED">APPROVED</SelectItem>
+                  <SelectItem value="REJECTED">REJECTED</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormItem>
+          <FormLabel>Profile Picture</FormLabel>
+          <UploadButton
+            endpoint="talentImageUploader"
+            className="ut-button:bg-secondary ut-button:text-secondary-foreground ut-label:text-muted-foreground"
+            onClientUploadComplete={(files) => {
+              const image = normalizeUploadedFile(files[0] as UploadedFile | undefined)
+              if (!image.url) {
+                toast.error("Image upload failed.")
+                return
+              }
+              form.setValue("profileImageUrl", image.url, { shouldValidate: true })
+              toast.success("Profile image uploaded.")
+            }}
+            onUploadError={(error: Error) => {
+              toast.error(error.message)
+            }}
+          />
+          {form.watch("profileImageUrl") ? <p className="text-xs text-muted-foreground">Image uploaded.</p> : null}
+        </FormItem>
+        <FormItem>
+          <FormLabel>Resume (PDF)</FormLabel>
+          <UploadButton
+            endpoint="talentResumeUploader"
+            className="ut-button:bg-secondary ut-button:text-secondary-foreground ut-label:text-muted-foreground"
+            onClientUploadComplete={(files) => {
+              const resume = normalizeUploadedFile(files[0] as UploadedFile | undefined)
+              if (!resume.url) {
+                toast.error("Resume upload failed.")
+                return
+              }
+              form.setValue("resumeUrl", resume.url, { shouldValidate: true })
+              form.setValue("resumeFileName", resume.name, { shouldValidate: true })
+              toast.success("Resume uploaded.")
+            }}
+            onUploadError={(error: Error) => {
+              toast.error(error.message)
+            }}
+          />
+          {form.watch("resumeFileName") ? (
+            <p className="text-xs text-muted-foreground">Uploaded: {form.watch("resumeFileName")}</p>
+          ) : null}
+        </FormItem>
+        <Button size="lg" disabled={isPending}>
+          {isPending ? <LoaderCircle className="animate-spin" /> : null}
+          {isPending ? "Saving..." : "Save changes"}
+        </Button>
+      </form>
+    </Form>
   )
 }

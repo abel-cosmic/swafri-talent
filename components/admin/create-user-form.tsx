@@ -1,63 +1,123 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { LoaderCircle } from "lucide-react"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useUserMutations } from "@/lib/query-hooks"
+import { createUserSchema } from "@/lib/schemas"
+
+type CreateUserValues = z.input<typeof createUserSchema>
 
 export function CreateUserForm() {
-  const [isPending, startTransition] = useTransition()
-  const [role, setRole] = useState("user")
   const { create } = useUserMutations()
+  const form = useForm<CreateUserValues>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "user",
+    },
+  })
 
-  function onSubmit(formData: FormData) {
-    startTransition(async () => {
-      const result = await create.mutateAsync({
-        name: String(formData.get("name") ?? ""),
-        email: String(formData.get("email") ?? ""),
-        password: String(formData.get("password") ?? ""),
-        role: String(formData.get("role") ?? "user"),
-      })
-      if (!result.success) toast.error(result.error ?? "Could not create user")
-      else toast.success("User created")
-    })
+  const isPending = form.formState.isSubmitting
+
+  async function onSubmit(values: CreateUserValues) {
+    const result = await create.mutateAsync(values)
+    if (!result.success) {
+      toast.error(result.error ?? "Could not create user")
+      return
+    }
+
+    form.reset({ name: "", email: "", password: "", role: "user" })
+    toast.success("User created")
   }
 
   return (
-    <form action={onSubmit} className="grid gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient)">
-      <h2 className="font-display text-display-md">Create User</h2>
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <Input id="name" name="name" required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="role">Role</Label>
-        <input type="hidden" name="role" value={role} />
-        <Select value={role} onValueChange={setRole}>
-          <SelectTrigger id="role" className="w-full">
-            <SelectValue placeholder="Select role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="user">user</SelectItem>
-            <SelectItem value="moderator">moderator</SelectItem>
-            <SelectItem value="admin">admin</SelectItem>
-            <SelectItem value="superAdmin">superAdmin</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <Button disabled={isPending}>{isPending ? "Creating..." : "Create User"}</Button>
-    </form>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="grid gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient)"
+      >
+        <h2 className="font-display text-display-md">Create User</h2>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Role</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="user">user</SelectItem>
+                  <SelectItem value="moderator">moderator</SelectItem>
+                  <SelectItem value="admin">admin</SelectItem>
+                  <SelectItem value="superAdmin">superAdmin</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button disabled={isPending}>{isPending ? <LoaderCircle className="animate-spin" /> : null}{isPending ? "Creating..." : "Create User"}</Button>
+      </form>
+    </Form>
   )
 }

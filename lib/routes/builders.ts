@@ -7,7 +7,7 @@ export const routeBuilders = {
   adminTalentEdit(id: string) {
     return `/admin/talents/${id}/edit`
   },
-  talentsList(params?: { page?: number; search?: string }) {
+  talentsList(params?: { page?: number; search?: string; skill?: string; minYears?: number }) {
     if (!params) {
       return ROUTES.talents
     }
@@ -20,6 +20,14 @@ export const routeBuilders = {
 
     if (params.search) {
       searchParams.set("search", params.search)
+    }
+
+    if (params.skill) {
+      searchParams.set("skill", params.skill)
+    }
+
+    if (typeof params.minYears === "number" && Number.isFinite(params.minYears) && params.minYears >= 0) {
+      searchParams.set("minYears", String(params.minYears))
     }
 
     const query = searchParams.toString()

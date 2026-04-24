@@ -13,6 +13,11 @@ export function TalentDetailClient({ id }: { id: string }) {
 
   return (
     <article className="space-y-5 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) md:p-7">
+      {talent.profileImageUrl ? (
+        <div className="overflow-hidden rounded-xl border border-border/80">
+          <img src={talent.profileImageUrl} alt={`${talent.fullName} profile`} className="h-64 w-full object-cover" />
+        </div>
+      ) : null}
       <header className="space-y-2">
         <h2 className="font-display text-display-md">{talent.fullName}</h2>
         <p className="font-editorial text-muted-foreground">{talent.primarySkill}</p>
@@ -31,6 +36,14 @@ export function TalentDetailClient({ id }: { id: string }) {
         <h3 className="font-display text-sm tracking-[0.03em] text-muted-foreground">About</h3>
         <p className="mt-2 whitespace-pre-wrap text-foreground/90">{talent.description}</p>
       </section>
+      {talent.resumeUrl ? (
+        <section className="rounded-lg bg-background/80 p-4">
+          <h3 className="font-display text-sm tracking-[0.03em] text-muted-foreground">Resume</h3>
+          <a href={talent.resumeUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-accent hover:underline">
+            {talent.resumeFileName ?? "Open uploaded resume"}
+          </a>
+        </section>
+      ) : null}
     </article>
   )
 }

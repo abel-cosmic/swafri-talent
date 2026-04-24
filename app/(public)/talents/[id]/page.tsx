@@ -5,7 +5,7 @@ export default async function TalentDetailPage({ params }: { params: Promise<{ i
   const { id } = await params;
 
   return (
-    <PageWrapper title="Talent Profile" description="Public profile details for approved talent records." className="max-w-3xl">
+    <PageWrapper title="Talent Profile" description="Public profile details for approved talent records.">
       <TalentDetailClient id={id} />
     </PageWrapper>
   )

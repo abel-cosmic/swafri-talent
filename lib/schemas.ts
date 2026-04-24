@@ -8,6 +8,9 @@ export const talentSubmissionSchema = z.object({
   primarySkill: z.string().trim().min(2).max(80),
   yearsOfExperience: z.coerce.number().int().min(0).max(60),
   description: z.string().trim().min(20).max(500),
+  profileImageUrl: z.url().optional(),
+  resumeUrl: z.url().optional(),
+  resumeFileName: z.string().trim().min(2).max(200).optional(),
 });
 
 export const adminLoginSchema = z.object({
@@ -29,6 +32,12 @@ export const createUserSchema = z.object({
   password: z.string().min(8),
   role: roleSchema,
 });
+
+export const talentFiltersSchema = z.object({
+  search: z.string().trim().optional(),
+  skill: z.string().trim().optional(),
+  minYears: z.coerce.number().int().min(0).max(60).optional(),
+})
 
 export const setUserRoleSchema = z.object({
   userId: z.string().min(1),
