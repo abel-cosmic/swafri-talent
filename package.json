@@ -15,6 +15,8 @@
     "db:seed": "prisma db seed"
   },
   "dependencies": {
+    "@better-upload/client": "^3.0.17",
+    "@better-upload/server": "^3.0.17",
     "@daveyplate/better-auth-ui": "^3.4.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-better-sqlite3": "^7.8.0",

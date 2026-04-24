@@ -37,6 +37,10 @@ export const talentFiltersSchema = z.object({
   search: z.string().trim().optional(),
   skill: z.string().trim().optional(),
   minYears: z.coerce.number().int().min(0).max(60).optional(),
+  maxYears: z.coerce.number().int().min(0).max(60).optional(),
+  hasResume: z.boolean().optional(),
+  hasImage: z.boolean().optional(),
+  sortBy: z.enum(["newest", "oldest", "experience_desc", "experience_asc", "name_asc", "name_desc"]).optional(),
 })
 
 export const setUserRoleSchema = z.object({

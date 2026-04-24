@@ -20,6 +20,10 @@ type TalentListParams = {
   search?: string;
   skill?: string;
   minYears?: number;
+  maxYears?: number;
+  hasResume?: boolean;
+  hasImage?: boolean;
+  sortBy?: "newest" | "oldest" | "experience_desc" | "experience_asc" | "name_asc" | "name_desc";
   status?: TalentStatus;
   adminView?: boolean;
 };

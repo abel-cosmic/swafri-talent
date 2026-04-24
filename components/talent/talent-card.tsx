@@ -3,15 +3,16 @@ import type { TalentProfile } from "@/generated/prisma/browser";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { routeBuilders } from "@/lib/routes/builders";
+import { getTalentProfileImage } from "@/lib/talent-artwork";
 
 export function TalentCard({ talent }: { talent: TalentProfile }) {
+  const profileImage = getTalentProfileImage(talent.profileImageUrl)
+
   return (
     <Card className="h-full">
-      {talent.profileImageUrl ? (
-        <div className="aspect-[16/9] w-full overflow-hidden rounded-t-xl border-b border-border/70">
-          <img src={talent.profileImageUrl} alt={`${talent.fullName} profile`} className="h-full w-full object-cover" />
-        </div>
-      ) : null}
+      <div className="aspect-[16/9] w-full overflow-hidden rounded-t-xl border-b border-border/70">
+        <img src={profileImage} alt={`${talent.fullName} profile`} className="h-full w-full object-cover" />
+      </div>
       <CardHeader className="space-y-2">
         <CardTitle>
           <Link href={routeBuilders.talentDetail(talent.id)} className="transition-colors hover:text-destructive">

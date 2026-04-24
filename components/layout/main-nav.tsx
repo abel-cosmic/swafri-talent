@@ -26,7 +26,17 @@ export function MainNav({ routes }: MainNavProps) {
       {routes.map((route) => {
         const active = isRouteActive(pathname, route.path)
         return (
-          <Button key={route.key} variant={active ? "default" : "ghost"} size="sm" asChild>
+          <Button
+            key={route.key}
+            variant="ghost"
+            size="sm"
+            className={
+              active
+                ? "rounded-full border border-border bg-muted text-foreground hover:bg-muted"
+                : "rounded-full border border-transparent text-muted-foreground hover:border-border hover:bg-muted/70 hover:text-foreground"
+            }
+            asChild
+          >
             <Link href={route.path} aria-current={active ? "page" : undefined}>
               {route.label}
             </Link>

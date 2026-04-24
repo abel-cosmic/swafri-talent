@@ -52,6 +52,9 @@ async function seedTalents() {
     primarySkill: ["React", "Node.js", "Design", "Data Science"][idx % 4],
     yearsOfExperience: (idx % 10) + 1,
     description: `Sample profile ${idx + 1} used for development and dashboard visual testing with enough detail.`,
+    profileImageUrl: null,
+    resumeUrl: null,
+    resumeFileName: null,
     status:
       idx % 3 === 0
         ? TalentStatus.PENDING

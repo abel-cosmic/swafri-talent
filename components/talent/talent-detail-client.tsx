@@ -2,6 +2,7 @@
 
 import { TalentStatus } from "@/generated/prisma/browser";
 import { useTalentDetailQuery } from "@/lib/query-hooks";
+import { getTalentProfileImage } from "@/lib/talent-artwork";
 
 export function TalentDetailClient({ id }: { id: string }) {
   const { data: talent, isLoading } = useTalentDetailQuery(id);
@@ -11,13 +12,13 @@ export function TalentDetailClient({ id }: { id: string }) {
     return <p className="text-destructive">Talent profile not found.</p>
   }
 
+  const profileImage = getTalentProfileImage(talent.profileImageUrl)
+
   return (
-    <article className="space-y-5 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) md:p-7">
-      {talent.profileImageUrl ? (
-        <div className="overflow-hidden rounded-xl border border-border/80">
-          <img src={talent.profileImageUrl} alt={`${talent.fullName} profile`} className="h-64 w-full object-cover" />
-        </div>
-      ) : null}
+    <article className="space-y-5 rounded-2xl border border-border bg-card p-5 md:p-7">
+      <div className="overflow-hidden rounded-xl border border-border/80">
+        <img src={profileImage} alt={`${talent.fullName} profile`} className="h-64 w-full object-cover" />
+      </div>
       <header className="space-y-2">
         <h2 className="font-display text-display-md">{talent.fullName}</h2>
         <p className="font-editorial text-muted-foreground">{talent.primarySkill}</p>

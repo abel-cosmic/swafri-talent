@@ -1,7 +1,8 @@
 "use client"
 
-import { CheckCircle2, LoaderCircle, Upload } from "lucide-react"
-import { useState } from "react"
+import { useUploadFile } from "@better-upload/client"
+import { CheckCircle2, FileUp, ImagePlus, LoaderCircle, Upload } from "lucide-react"
+import { useRef, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -18,7 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useTalentMutations } from "@/lib/query-hooks"
-import { UploadButton } from "@/lib/uploadthing"
+import { resolveUploadedFileUrl } from "@/lib/uploads"
 
 type TalentFormValues = {
   fullName: string
@@ -31,26 +32,11 @@ type TalentFormValues = {
   resumeFileName?: string
 }
 
-type UploadedFile = {
-  name?: string
-  ufsUrl?: string
-  url?: string
-  serverData?: {
-    name?: string
-    url?: string
-  }
-}
-
-function normalizeUploadedFile(file: UploadedFile | undefined) {
-  return {
-    url: file?.serverData?.url ?? file?.ufsUrl ?? file?.url ?? "",
-    name: file?.serverData?.name ?? file?.name ?? "",
-  }
-}
-
 export function TalentForm() {
   const [success, setSuccess] = useState(false)
   const { submit } = useTalentMutations()
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const resumeInputRef = useRef<HTMLInputElement>(null)
   const form = useForm<TalentFormValues>({
     defaultValues: {
       fullName: "",
@@ -67,6 +53,39 @@ export function TalentForm() {
   const uploadedResumeName = useWatch({ control: form.control, name: "resumeFileName" })
 
   const isPending = form.formState.isSubmitting
+  const imageUploader = useUploadFile({
+    api: "/api/upload",
+    route: "talentImage",
+    onUploadComplete: ({ file }) => {
+      const fileUrl = resolveUploadedFileUrl(file.objectInfo.key)
+      if (!fileUrl) {
+        toast.error("Image upload failed.")
+        return
+      }
+      form.setValue("profileImageUrl", fileUrl, { shouldValidate: true })
+      toast.success("Profile image uploaded.")
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+  const resumeUploader = useUploadFile({
+    api: "/api/upload",
+    route: "talentResume",
+    onUploadComplete: ({ file }) => {
+      const fileUrl = resolveUploadedFileUrl(file.objectInfo.key)
+      if (!fileUrl) {
+        toast.error("Resume upload failed.")
+        return
+      }
+      form.setValue("resumeUrl", fileUrl, { shouldValidate: true })
+      form.setValue("resumeFileName", file.name, { shouldValidate: true })
+      toast.success("Resume uploaded.")
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
 
   async function onSubmit(values: TalentFormValues) {
     setSuccess(false)
@@ -94,7 +113,7 @@ export function TalentForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-(--cursor-shadow-ambient) md:p-6"
+        className="space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6"
       >
         <FormField
           control={form.control}
@@ -167,65 +186,82 @@ export function TalentForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="profileImageUrl"
-          render={() => (
-            <FormItem>
-              <FormLabel>Profile Picture</FormLabel>
-              <UploadButton
-                endpoint="talentImageUploader"
-                className="ut-button:bg-secondary ut-button:text-secondary-foreground ut-label:text-muted-foreground"
-                onClientUploadComplete={(files) => {
-                  const image = normalizeUploadedFile(files[0] as UploadedFile | undefined)
-                  if (!image.url) {
-                    toast.error("Image upload failed.")
-                    return
-                  }
-                  form.setValue("profileImageUrl", image.url, { shouldValidate: true })
-                  toast.success("Profile image uploaded.")
-                }}
-                onUploadError={(error: Error) => {
-                  toast.error(error.message)
-                }}
-              />
-              {uploadedProfileImage ? (
-                <p className="text-xs text-muted-foreground">Image uploaded and ready.</p>
-              ) : null}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="resumeUrl"
-          render={() => (
-            <FormItem>
-              <FormLabel>Resume Upload (PDF)</FormLabel>
-              <UploadButton
-                endpoint="talentResumeUploader"
-                className="ut-button:bg-secondary ut-button:text-secondary-foreground ut-label:text-muted-foreground"
-                onClientUploadComplete={(files) => {
-                  const resume = normalizeUploadedFile(files[0] as UploadedFile | undefined)
-                  if (!resume.url) {
-                    toast.error("Resume upload failed.")
-                    return
-                  }
-                  form.setValue("resumeUrl", resume.url, { shouldValidate: true })
-                  form.setValue("resumeFileName", resume.name, { shouldValidate: true })
-                  toast.success("Resume uploaded.")
-                }}
-                onUploadError={(error: Error) => {
-                  toast.error(error.message)
-                }}
-              />
-              {uploadedResumeName ? (
-                <p className="text-xs text-muted-foreground">Uploaded: {uploadedResumeName}</p>
-              ) : null}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="profileImageUrl"
+            render={() => (
+              <FormItem className="space-y-3 rounded-xl border border-border bg-background/40 p-4">
+                <FormLabel>Profile Picture</FormLabel>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (event) => {
+                    const file = event.currentTarget.files?.[0]
+                    if (!file) {
+                      return
+                    }
+                    await imageUploader.upload(file)
+                    event.currentTarget.value = ""
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-full"
+                  disabled={imageUploader.isPending}
+                  onClick={() => imageInputRef.current?.click()}
+                >
+                  {imageUploader.isPending ? <LoaderCircle className="animate-spin" /> : <ImagePlus />}
+                  {imageUploader.isPending ? "Uploading image..." : "Choose image"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  {uploadedProfileImage ? "Image uploaded and ready." : "JPG or PNG recommended."}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="resumeUrl"
+            render={() => (
+              <FormItem className="space-y-3 rounded-xl border border-border bg-background/40 p-4">
+                <FormLabel>Resume Upload (PDF)</FormLabel>
+                <input
+                  ref={resumeInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={async (event) => {
+                    const file = event.currentTarget.files?.[0]
+                    if (!file) {
+                      return
+                    }
+                    await resumeUploader.upload(file)
+                    event.currentTarget.value = ""
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-full"
+                  disabled={resumeUploader.isPending}
+                  onClick={() => resumeInputRef.current?.click()}
+                >
+                  {resumeUploader.isPending ? <LoaderCircle className="animate-spin" /> : <FileUp />}
+                  {resumeUploader.isPending ? "Uploading resume..." : "Choose resume"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  {uploadedResumeName ? `Uploaded: ${uploadedResumeName}` : "Attach a PDF resume (optional)."}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <Button size="lg" disabled={isPending} className="min-w-36">
           {isPending ? <LoaderCircle className="animate-spin" /> : <Upload />}
           {isPending ? "Submitting..." : "Submit"}

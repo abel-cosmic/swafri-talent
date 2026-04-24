@@ -5,21 +5,21 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-border bg-clip-padding font-display text-sm font-medium whitespace-nowrap text-foreground transition-all duration-150 ease-out outline-none select-none focus-visible:border-[var(--cursor-border-medium)] focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-border bg-clip-padding font-display text-sm font-medium whitespace-nowrap text-foreground transition-all duration-150 ease-out outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/60 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[var(--cursor-shadow-ambient)] hover:-translate-y-px hover:text-destructive",
+          "rounded-full border-[var(--button-primary-border)] !bg-[var(--button-primary-bg)] px-7 text-[var(--button-primary-fg)] hover:border-[var(--button-primary-hover-border)] hover:!bg-[var(--button-primary-bg)] hover:text-[var(--button-primary-fg)]",
         outline:
-          "border-border bg-background hover:border-[var(--cursor-border-medium)] hover:bg-muted hover:text-destructive aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-border bg-background hover:border-ring hover:bg-muted hover:text-foreground",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-[var(--cursor-surface-500)] hover:text-destructive aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "rounded-full border-[var(--button-secondary-border)] bg-[var(--button-secondary-bg)] text-[var(--button-secondary-fg)]/80 hover:border-[var(--button-secondary-hover-border)] hover:bg-[var(--button-secondary-bg)] hover:text-[var(--button-secondary-fg)] aria-expanded:bg-[var(--button-secondary-bg)] aria-expanded:text-[var(--button-secondary-fg)]",
         ghost:
-          "border-transparent bg-transparent text-muted-foreground hover:bg-muted hover:text-destructive aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-transparent bg-transparent text-[var(--button-ghost-fg)] hover:bg-[var(--button-ghost-hover-bg)] hover:text-foreground aria-expanded:bg-[var(--button-ghost-hover-bg)] aria-expanded:text-foreground",
         destructive:
           "border-transparent bg-destructive/14 text-destructive hover:bg-destructive/24 focus-visible:border-destructive/40 focus-visible:ring-destructive/20",
-        link: "border-transparent bg-transparent px-1 text-accent underline-offset-4 hover:text-destructive hover:underline",
+        link: "border-transparent bg-transparent px-1 text-[var(--button-link-fg)] underline-offset-4 hover:text-[var(--button-link-fg)]/85 hover:underline",
       },
       size: {
         default:

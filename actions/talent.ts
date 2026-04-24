@@ -28,6 +28,10 @@ export async function getTalents(params?: {
   search?: string;
   skill?: string;
   minYears?: number;
+  maxYears?: number;
+  hasResume?: boolean;
+  hasImage?: boolean;
+  sortBy?: "newest" | "oldest" | "experience_desc" | "experience_asc" | "name_asc" | "name_desc";
   page?: number;
   pageSize?: number;
   adminView?: boolean;
@@ -39,11 +43,42 @@ export async function getTalents(params?: {
     search: params?.search,
     skill: params?.skill,
     minYears: params?.minYears,
+    maxYears: params?.maxYears,
+    hasResume: params?.hasResume,
+    hasImage: params?.hasImage,
+    sortBy: params?.sortBy,
   });
 
   const search = parsedFilters.success ? parsedFilters.data.search : undefined;
   const skill = parsedFilters.success ? parsedFilters.data.skill : undefined;
   const minYears = parsedFilters.success ? parsedFilters.data.minYears : undefined;
+  const maxYears = parsedFilters.success ? parsedFilters.data.maxYears : undefined;
+  const hasResume = parsedFilters.success ? parsedFilters.data.hasResume : undefined;
+  const hasImage = parsedFilters.success ? parsedFilters.data.hasImage : undefined;
+  const sortBy = parsedFilters.success ? parsedFilters.data.sortBy ?? "newest" : "newest";
+
+  const yearsFilter =
+    typeof minYears === "number" || typeof maxYears === "number"
+      ? {
+          yearsOfExperience: {
+            ...(typeof minYears === "number" ? { gte: minYears } : {}),
+            ...(typeof maxYears === "number" ? { lte: maxYears } : {}),
+          },
+        }
+      : {};
+
+  const orderBy: Prisma.TalentProfileOrderByWithRelationInput =
+    sortBy === "oldest"
+      ? { createdAt: "asc" }
+      : sortBy === "experience_desc"
+        ? { yearsOfExperience: "desc" }
+        : sortBy === "experience_asc"
+          ? { yearsOfExperience: "asc" }
+          : sortBy === "name_asc"
+            ? { fullName: "asc" }
+            : sortBy === "name_desc"
+              ? { fullName: "desc" }
+              : { createdAt: "desc" };
 
   const where: Prisma.TalentProfileWhereInput = {
     ...(status ? { status } : {}),
@@ -53,13 +88,15 @@ export async function getTalents(params?: {
         }
       : {}),
     ...(skill ? { primarySkill: { contains: skill } } : {}),
-    ...(typeof minYears === "number" ? { yearsOfExperience: { gte: minYears } } : {}),
+    ...yearsFilter,
+    ...(typeof hasResume === "boolean" ? { resumeUrl: hasResume ? { not: null } : null } : {}),
+    ...(typeof hasImage === "boolean" ? { profileImageUrl: hasImage ? { not: null } : null } : {}),
   };
 
   const [items, total] = await Promise.all([
     prisma.talentProfile.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
